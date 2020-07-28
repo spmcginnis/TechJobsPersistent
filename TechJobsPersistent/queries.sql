@@ -1,4 +1,7 @@
---Part 1
+--Part 1: For the jobs table, list the columns and their data types.
+SELECT COLUMN_NAME, DATA_TYPE
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = 'jobs';
 
 --Part 2
 
