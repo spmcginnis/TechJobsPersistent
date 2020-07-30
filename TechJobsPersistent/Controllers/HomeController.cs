@@ -30,14 +30,61 @@ namespace TechJobsPersistent.Controllers
         }
 
         [HttpGet("/Add")]
-        public IActionResult AddJob()
+        public IActionResult Add()
+            // formerly AddJob
         {
-            return View();
+            List<Employer> emps = context.Employers.ToList();
+            //queries the database for employers
+            List<Skill> skills = context.Skills.ToList();
+
+            AddJobViewModel addJobViewModel = new AddJobViewModel(emps, skills);
+            return View(addJobViewModel);
         }
 
-        public IActionResult ProcessAddJobForm()
+        [HttpPost("/Add")]
+        public IActionResult Add(AddJobViewModel addJobViewModel, List<int> selectedSkills)
+            // formerly ProcessAddJobForm
         {
-            return View();
+            if (ModelState.IsValid)
+            {
+                Employer emp = context.Employers.Find(addJobViewModel.EmployerId);
+                // ^ Is this correct??
+
+                Job newJob = new Job
+                {
+                    Name = addJobViewModel.Name,
+                    EmployerId = emp.Id
+                    //JobSkills
+                };
+                context.Jobs.Add(newJob);
+
+                foreach (int skillId in selectedSkills)
+                {
+                    JobSkill newJobSkill = new JobSkill
+                    {
+                        Job = newJob, //Job type
+                        JobId = newJob.Id, //int
+                        Skill = context.Skills.Find(skillId), //Skill type
+                        SkillId = skillId //int
+                    };
+                    context.JobSkills.Add(newJobSkill);
+                }
+
+
+                
+                context.SaveChanges();
+
+                return Redirect("/add");
+                // For some reason, when I enter invalid data, the form select dropdown menu loses its values (fixed, but see below)
+            }
+
+            List<Employer> emps = context.Employers.ToList();
+            List<Skill> skills = context.Skills.ToList();
+            addJobViewModel = new AddJobViewModel(emps, skills);
+            // I had to add these lines in order to repopulate the dropdown when invalid data was entered.  It seems clunky to me.
+
+
+            return View(addJobViewModel);
         }
 
         public IActionResult Detail(int id)
